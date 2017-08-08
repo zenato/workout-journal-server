@@ -1,6 +1,6 @@
 # Workout journal
 
-Workout journal REST API toy project.
+Python based workout journal REST API toy project.
 
 ## Getting Started
 
@@ -23,5 +23,5 @@ You may need to migrate DB.
 
 
 ## Related project
-* [Web client](https://github.com/zenato/workout-journal-web) - React based web client.
+* [Web client](https://github.com/zenato/workout-journal-web) - React based web client toy project.
 * [Mobile client] - Progressive.
