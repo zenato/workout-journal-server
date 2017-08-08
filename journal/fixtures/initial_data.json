@@ -1,0 +1,1 @@
+[{"model": "journal.post", "pk": 1, "fields": {"author": 1, "title": "\uc624\ub298\uc740 \uadf8\ub0e5 \ud568", "text": "\uc774\uac83\uc740 \uc0dd\uc131\uc77c.....\uc778\uac00???", "created_at": "2017-06-16T06:35:17Z"}}, {"model": "journal.post", "pk": 2, "fields": {"author": 1, "title": "Sampel title", "text": "\ud14c\uc2a4\ud2b8", "created_at": "2017-06-16T07:08:08.366Z"}}]
