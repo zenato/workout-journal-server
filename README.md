@@ -4,8 +4,14 @@ Python based workout journal REST API toy project.
 
 ## Getting Started
 
-### Edit your DB configuration
-Edit `DATABASES` property in `workout_journal/settings.py`.
+### Create your own configuration `.env` in project root.
+```
+DB_NAME = db_name
+DB_USER = user_name
+DB_PASSWORD = user_password
+DB_HOST = 127.0.0.1
+DB_PORT = 5432
+```
 
 ### Configure virtual environment
 `python3 -m venv venv`
