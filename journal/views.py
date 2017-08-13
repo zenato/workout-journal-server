@@ -16,6 +16,7 @@ class EventList(generics.ListCreateAPIView):
     }
     ordering_fields = ('name',)
     ordering = ('name',)
+    pagination_class = None
 
 
 class EventDetail(generics.RetrieveUpdateDestroyAPIView):
