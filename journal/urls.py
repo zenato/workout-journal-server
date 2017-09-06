@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import views
@@ -17,6 +17,7 @@ urlpatterns = [
 '''
 
 urlpatterns = [
+    url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^events/$', views.EventList.as_view()),
     url(r'^events/(?P<pk>[0-9]+)/', views.EventDetail.as_view()),
     url(r'^posts/$', views.PostList.as_view()),

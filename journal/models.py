@@ -11,6 +11,7 @@ class Event(models.Model):
     unit = models.CharField(max_length=10, default='Kg', verbose_name='Unit')
     value = models.SmallIntegerField(blank=True, null=True, verbose_name='Value')
     remark = models.TextField(blank=True, verbose_name='Etc.')
+    own = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
     @property
     def last_performance(self):
@@ -27,6 +28,7 @@ class Post(models.Model):
 
     workout_date = models.DateTimeField(default=timezone.now, verbose_name='Workout date')
     remark = models.CharField(max_length=200, blank=True, null=True, verbose_name='Remark')
+    own = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
     def formatted_workout_date(self):
         return timezone.localtime(self.workout_date).strftime('%Y-%m-%d %H:%M')
