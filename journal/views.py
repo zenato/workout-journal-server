@@ -1,10 +1,11 @@
-from rest_framework import generics, permissions
+from django.contrib.auth.models import User
+from rest_framework import generics, permissions, response
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .permissions import IsOwner
 from .models import Event, Post
-from .serializers import EventSerializer, PostSerializer
+from .serializers import EventSerializer, PostSerializer, UserSerializer
 
 
 class EventList(generics.ListCreateAPIView):
@@ -21,6 +22,9 @@ class EventList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return Event.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 class EventDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -44,6 +48,9 @@ class PostList(generics.ListCreateAPIView):
     def get_queryset(self):
         return Post.objects.filter(owner=self.request.user)
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsOwner,)
@@ -51,3 +58,12 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Post.objects.filter(owner=self.request.user)
+
+
+class UserDetail(generics.RetrieveAPIView):
+    model = User
+    serializer_class = UserSerializer
+
+    def get(self, request, pk=None):
+        if request.user and pk == 'me':
+            return response.Response(UserSerializer(request.user).data)

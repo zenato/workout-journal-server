@@ -18,6 +18,8 @@ urlpatterns = [
 
 urlpatterns = [
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+
+    url(r'^users/(?P<pk>[me]+)/', views.UserDetail.as_view()),
     url(r'^events/$', views.EventList.as_view()),
     url(r'^events/(?P<pk>[0-9]+)/', views.EventDetail.as_view()),
     url(r'^posts/$', views.PostList.as_view()),
