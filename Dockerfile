@@ -10,7 +10,7 @@ ENV DB_NAME "workout-journal"
 
 COPY . /app
 
-RUN cd /app && pip install -r requirements.txt && python3 manage.py migrate
+RUN cd /app && pip install -r requirements.txt
 
 EXPOSE 8000
 
