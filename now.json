@@ -1,0 +1,9 @@
+{
+  "env": {
+    "DB_HOST": "@workout-journal-db-host",
+    "DB_PORT": "@workout-journal-db-port",
+    "DB_USER": "@workout-journal-db-user",
+    "DB_PASSWORD": "@workout-journal-db-password",
+    "DB_NAME": "@workout-journal-db-name"
+  }
+}
