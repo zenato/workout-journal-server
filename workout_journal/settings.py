@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'journal.apps.JournalConfig',
     'corsheaders',
+    'graphene_django',
 ]
 
 MIDDLEWARE = [
@@ -160,4 +161,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 AUTH2_PROVIDER = {
     'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'groups': 'Access to your groups'}
+}
+
+GRAPHENE = {
+    'SCHEMA': 'workout_journal.schema.schema'
 }

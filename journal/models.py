@@ -11,7 +11,7 @@ class Event(models.Model):
     name = models.CharField(max_length=200, verbose_name='Name')
     unit = models.CharField(max_length=10, default='Kg', verbose_name='Unit')
     value = models.SmallIntegerField(blank=True, null=True, verbose_name='Value')
-    remark = models.TextField(blank=True, verbose_name='Etc.')
+    remark = models.TextField(blank=True, null=True, verbose_name='Etc.')
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     @property

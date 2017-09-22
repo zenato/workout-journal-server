@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from .views import PrivateGraphQLView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    url(r'^graphql', PrivateGraphQLView.as_view(graphiql=True)),
     url(r'', include('journal.urls'))
 ]

@@ -1,52 +1,48 @@
-import json
-from rest_framework.test import APITestCase
-from rest_framework.test import APIRequestFactory, force_authenticate
+import graphene
+from django.test import TestCase
+from graphene.test import Client
 from .models import User
-from . import views
+from .schema import Query
+from .mutation import Mutation
 
 TEST_USERNAME = 'zenato'
 
 
-class BaseTestCase(APITestCase):
+class MockContext(object):
+    def __init__(self, user):
+        self.user = user
+
+
+class TestQuery(Query, graphene.ObjectType):
+    pass
+
+
+class TestMutation(Mutation, graphene.ObjectType):
+    pass
+
+
+class BaseTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         super(BaseTestCase, cls).setUpClass()
-        cls.factory = APIRequestFactory()
-        cls.user = User.objects.get(username=TEST_USERNAME)
 
-    def query(self, request, view):
-        force_authenticate(request, user=self.user)
-        response = view(request)
-        response.render()
-        return json.loads(response.content)
+        cls.user = User.objects.get(username=TEST_USERNAME)
+        cls.schema = graphene.Schema(query=TestQuery, mutation=TestMutation)
 
 
 class EventTests(BaseTestCase):
     """
-    Ensure we can create a new event object.
+    Ensure we can get a event objects.
     """
 
-    def test_create_event(self):
-        request = self.factory.post('/events', {
-            'name': 'name',
-            'unit': 'unit',
-            'value': 10,
-            'remark': 'remark',
-        })
-
-        result = self.query(request, views.EventList.as_view())
-
-        self.assertEqual(result['name'], 'name')
-        self.assertEqual(result['unit'], 'unit')
-        self.assertEqual(result['value'], 10)
-        self.assertEqual(result['remark'], 'remark')
-
-    """
-    Ensure we can get event objects.
-    """
-
-    def test_list_event(self):
-        request = self.factory.get('/events')
-        result = self.query(request, views.EventList.as_view())
-
-        self.assertTrue(len(result) > 0)
+    def test_query_event(self):
+        client = Client(self.schema)
+        executed = client.execute(
+            '''
+                query {
+                    allEvents { name }
+                }
+            ''',
+            context_value=MockContext(self.user)
+        )
+        self.assertIsNotNone(executed.get('data'))
