@@ -19,12 +19,28 @@ class PerformanceNode(DjangoObjectType):
         model = Performance
 
 
-class Query(object):
-    all_events = graphene.List(EventNode)
-    all_posts = graphene.List(PostNode)
+class Query(graphene.ObjectType):
+    all_events = graphene.List(EventNode, name=graphene.String())
+    all_posts = graphene.List(PostNode, name=graphene.String())
 
-    def resolve_all_events(self, info):
-        return Event.objects.filter(owner=info.context.user)
+    def resolve_all_events(self, info, name=None):
+        where = {
+            'owner': info.context.user,
+        }
 
-    def resolve_all_posts(self, info):
-        return Post.objects.filter(owner=info.context.user)
+        if name:
+            where['name__contains'] = name
+
+        items = Event.objects.filter(**where)
+        return items
+
+    def resolve_all_posts(self, info, name=None):
+        where = {
+            'owner': info.context.user,
+        }
+
+        if name:
+            where['performances__event__name'] = name
+
+        items = Post.objects.filter(**where)
+        return items
