@@ -13,7 +13,7 @@ graphql-relay==0.4.5
 idna==2.6
 iso8601==0.1.12
 oauthlib==2.0.2
-promise==2.1.dev20170724043809
+promise==2.1.dev0
 psycopg2==2.7.1
 python-dotenv==0.6.5
 pytz==2017.2
