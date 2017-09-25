@@ -27,16 +27,16 @@ class PerformanceNode(DjangoObjectType):
 class Query(graphene.ObjectType):
     user = graphene.Field(UserNode)
 
-    all_events = graphene.List(EventNode, name=graphene.String())
+    events = graphene.List(EventNode, name=graphene.String())
     event = graphene.Field(EventNode, id=graphene.ID(required=True))
 
-    all_posts = graphene.List(PostNode, name=graphene.String())
+    posts = graphene.List(PostNode, name=graphene.String())
     post = graphene.Field(PostNode, id=graphene.ID(required=True))
 
     def resolve_user(self, info):
         return User.objects.get(pk=info.context.user.id)
 
-    def resolve_all_events(self, info, name=None):
+    def resolve_events(self, info, name=None):
         where = {'owner': info.context.user, }
         if name:
             where['name__contains'] = name
@@ -45,7 +45,7 @@ class Query(graphene.ObjectType):
     def resolve_event(self, info, id=None):
         return Event.objects.get(owner=info.context.user, pk=id)
 
-    def resolve_all_posts(self, info, name=None):
+    def resolve_posts(self, info, name=None):
         where = {'owner': info.context.user, }
         if name:
             where['performances__event__name'] = name

@@ -52,7 +52,7 @@ class EventTests(BaseTestCase):
         executed = client.execute(
             '''
             query {
-                allEvents(name: "test") { name }
+                events(name: "test") { name }
             }
             ''',
             context_value=MockContext(self.user),
@@ -140,7 +140,7 @@ class PostTests(BaseTestCase):
         executed = client.execute(
             '''
                 query {
-                    allPosts(name: "test") {
+                    posts(name: "test") {
                         performances {
                             id
                             event {
