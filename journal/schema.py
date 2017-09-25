@@ -1,7 +1,12 @@
 import graphene
-
 from graphene_django.types import DjangoObjectType
+from django.contrib.auth.models import User
 from .models import Event, Post, Performance
+
+
+class UserNode(DjangoObjectType):
+    class Meta:
+        model = User
 
 
 class EventNode(DjangoObjectType):
@@ -20,11 +25,16 @@ class PerformanceNode(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
+    user = graphene.Field(UserNode)
+
     all_events = graphene.List(EventNode, name=graphene.String())
     event = graphene.Field(EventNode, id=graphene.ID(required=True))
 
     all_posts = graphene.List(PostNode, name=graphene.String())
     post = graphene.Field(PostNode, id=graphene.ID(required=True))
+
+    def resolve_user(self, info):
+        return User.objects.get(pk=info.context.user.id)
 
     def resolve_all_events(self, info, name=None):
         where = {'owner': info.context.user, }
