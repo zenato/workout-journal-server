@@ -1,6 +1,6 @@
 # Workout journal
 
-Python based workout journal REST API toy project.
+Python based workout journal API server toy project.
 
 ## Getting Started
 
