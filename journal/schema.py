@@ -9,11 +9,6 @@ class UserNode(DjangoObjectType):
         model = User
 
 
-class EventNode(DjangoObjectType):
-    class Meta:
-        model = Event
-
-
 class PostNode(DjangoObjectType):
     class Meta:
         model = Post
@@ -22,6 +17,13 @@ class PostNode(DjangoObjectType):
 class PerformanceNode(DjangoObjectType):
     class Meta:
         model = Performance
+
+
+class EventNode(DjangoObjectType):
+    last_performance = graphene.Field(PerformanceNode, source='last_performance')
+
+    class Meta:
+        model = Event
 
 
 class Query(graphene.ObjectType):
