@@ -42,7 +42,7 @@ class Query(graphene.ObjectType):
         where = {'owner': info.context.user, }
         if name:
             where['name__contains'] = name
-        return Event.objects.filter(**where)
+        return Event.objects.filter(**where).order_by('-pk')
 
     def resolve_event(self, info, id=None):
         return Event.objects.get(owner=info.context.user, pk=id)
@@ -50,8 +50,8 @@ class Query(graphene.ObjectType):
     def resolve_posts(self, info, name=None):
         where = {'owner': info.context.user, }
         if name:
-            where['performances__event__name'] = name
-        return Post.objects.filter(**where)
+            where['performances__event__name__contains'] = name
+        return Post.objects.filter(**where).order_by('-pk')
 
     def resolve_post(self, info, id=None):
         return Post.objects.get(owner=info.context.user, pk=id)
