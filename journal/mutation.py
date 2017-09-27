@@ -110,7 +110,6 @@ class UpdatePostInput(graphene.InputObjectType, PostFields):
 
 class UpdatePost(graphene.Mutation):
     class Arguments:
-        id = graphene.ID(required=True)
         input = UpdatePostInput(required=True)
         performances = graphene.List(PerformanceInput)
 
