@@ -63,17 +63,12 @@ class DeleteEvent(graphene.Mutation):
 
 # Post mutations
 
-class PostFields:
-    workout_date = graphene.types.datetime.DateTime()
-    remark = graphene.String()
-
-
-class CreatePostInput(graphene.InputObjectType, PostFields):
-    pass
+class PerformanceEventInput(graphene.InputObjectType):
+    id = graphene.ID(required=True)
 
 
 class PerformanceInput(graphene.InputObjectType):
-    event = graphene.Int()
+    event = graphene.InputField(PerformanceEventInput, required=True)
     value = graphene.Int(required=True)
     set1 = graphene.Int()
     set2 = graphene.Int()
@@ -82,22 +77,32 @@ class PerformanceInput(graphene.InputObjectType):
     set5 = graphene.Int()
 
 
+class PostFields:
+    workout_date = graphene.types.datetime.DateTime()
+    remark = graphene.String()
+    performances = graphene.List(PerformanceInput)
+
+
+class CreatePostInput(graphene.InputObjectType, PostFields):
+    pass
+
+
 class CreatePost(graphene.Mutation):
     class Arguments:
         input = CreatePostInput(required=True)
-        performances = graphene.List(PerformanceInput)
 
     post = graphene.Field(PostNode)
 
     @staticmethod
-    def mutate(root, info, input=None, performances=[]):
+    def mutate(root, info, input=None):
+        performances = input.pop('performances')
+
         post = Post(owner=info.context.user, **input)
         post.save()
 
         for performance_data in performances:
-            event_id = performance_data.pop('event')
-            event = Event.objects.get(pk=event_id)
-
+            event_data = performance_data.pop('event')
+            event = Event.objects.get(pk=event_data.get('id'))
             performance = Performance.objects.create(post=post, event=event, **performance_data)
             post.performances.add(performance)
 
@@ -111,22 +116,21 @@ class UpdatePostInput(graphene.InputObjectType, PostFields):
 class UpdatePost(graphene.Mutation):
     class Arguments:
         input = UpdatePostInput(required=True)
-        performances = graphene.List(PerformanceInput)
 
     post = graphene.Field(PostNode)
 
     @staticmethod
-    def mutate(root, info, input=None, performances=[]):
+    def mutate(root, info, input=None):
         id = input.get('id')
+        performances = input.pop('performances')
+        Performance.objects.filter(post__pk=id).delete()
+
         Post.objects.filter(pk=id, owner=info.context.user).update(**input)
         post = Post.objects.get(pk=id, owner=info.context.user)
 
-        Performance.objects.filter(post=post).delete()
-
         for performance_data in performances:
-            event_id = performance_data.pop('event')
-            event = Event.objects.get(pk=event_id)
-
+            event_data = performance_data.pop('event')
+            event = Event.objects.get(pk=event_data.get('id'))
             performance = Performance.objects.create(post=post, event=event, **performance_data)
             post.performances.add(performance)
 
