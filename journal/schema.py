@@ -1,57 +1,58 @@
 import graphene
+from graphene import relay
+from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.types import DjangoObjectType
-from django.contrib.auth.models import User
-from .models import Event, Post, Performance
+from django.contrib.auth.models import User as UserModel
+from .models import Event as EventModel, Post as PostModel, Performance as PerformanceModel
 
 
-class UserNode(DjangoObjectType):
+class User(DjangoObjectType):
     class Meta:
-        model = User
+        model = UserModel
 
 
-class PostNode(DjangoObjectType):
+class Post(DjangoObjectType):
     class Meta:
-        model = Post
+        model = PostModel
+        interfaces = (relay.Node,)
+        filter_fields = {
+            'performances__event__name': ['icontains'],
+        }
+
+    @classmethod
+    def get_node(cls, info, id):
+        return PostModel.objects.get(pk=id, owner=info.context.user.id)
 
 
-class PerformanceNode(DjangoObjectType):
+class Performance(DjangoObjectType):
     class Meta:
-        model = Performance
+        model = PerformanceModel
 
 
-class EventNode(DjangoObjectType):
-    last_performance = graphene.Field(PerformanceNode, source='last_performance')
+class Event(DjangoObjectType):
+    last_performance = graphene.Field(Performance, source='last_performance')
 
     class Meta:
-        model = Event
+        model = EventModel
+        interfaces = (relay.Node,)
+        filter_fields = ['name']
+
+    @classmethod
+    def get_node(cls, info, id):
+        return EventModel.objects.get(pk=id, owner=info.context.user.id)
 
 
 class Query(graphene.ObjectType):
-    user = graphene.Field(UserNode)
-
-    events = graphene.List(EventNode, name=graphene.String())
-    event = graphene.Field(EventNode, id=graphene.ID(required=True))
-
-    posts = graphene.List(PostNode, name=graphene.String())
-    post = graphene.Field(PostNode, id=graphene.ID(required=True))
+    node = relay.Node.Field()
+    user = graphene.Field(User)
+    events = DjangoFilterConnectionField(Event)
+    posts = DjangoFilterConnectionField(Post)
 
     def resolve_user(self, info):
-        return User.objects.get(pk=info.context.user.id)
+        return UserModel.objects.get(pk=info.context.user.id)
 
-    def resolve_events(self, info, name=None):
-        where = {'owner': info.context.user, }
-        if name:
-            where['name__contains'] = name
-        return Event.objects.filter(**where).order_by('-pk')
+    def resolve_events(self, info, **args):
+        return EventModel.objects.filter(owner=info.context.user).order_by('-pk')
 
-    def resolve_event(self, info, id=None):
-        return Event.objects.get(owner=info.context.user, pk=id)
-
-    def resolve_posts(self, info, name=None):
-        where = {'owner': info.context.user, }
-        if name:
-            where['performances__event__name__contains'] = name
-        return Post.objects.filter(**where).order_by('-pk')
-
-    def resolve_post(self, info, id=None):
-        return Post.objects.get(owner=info.context.user, pk=id)
+    def resolve_posts(self, info, **args):
+        return PostModel.objects.filter(owner=info.context.user).order_by('-pk')

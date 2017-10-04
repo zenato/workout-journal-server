@@ -1,7 +1,7 @@
 import graphene
 import graphene.types.datetime
-from .schema import EventNode, PostNode
-from .models import Event, Post, Performance
+from .schema import Event, Post
+from .models import Event as EventModel, Post as PostModel, Performance as PerformanceModel
 
 
 # Event mutations
@@ -21,11 +21,11 @@ class CreateEvent(graphene.Mutation):
     class Arguments:
         input = CreateEventInput(required=True)
 
-    event = graphene.Field(EventNode)
+    event = graphene.Field(Event)
 
     @staticmethod
     def mutate(root, info, input=None):
-        event = Event(owner=info.context.user, **input)
+        event = EventModel(owner=info.context.user, **input)
         event.save()
         return CreateEvent(event=event)
 
@@ -38,13 +38,13 @@ class UpdateEvent(graphene.Mutation):
     class Arguments:
         input = UpdateEventInput(required=True)
 
-    event = graphene.Field(EventNode)
+    event = graphene.Field(Event)
 
     @staticmethod
     def mutate(root, info, input=None):
         id = input.get('id')
-        Event.objects.filter(pk=id, owner=info.context.user).update(**input)
-        event = Event.objects.get(pk=id)
+        EventModel.objects.filter(pk=id, owner=info.context.user).update(**input)
+        event = EventModel.objects.get(pk=id)
         return UpdateEvent(event=event)
 
 
@@ -56,7 +56,7 @@ class DeleteEvent(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, id=None):
-        event = Event.objects.get(pk=id, owner=info.context.user)
+        event = EventModel.objects.get(pk=id, owner=info.context.user)
         event.delete()
         return DeleteEvent(success=True)
 
@@ -91,19 +91,19 @@ class CreatePost(graphene.Mutation):
     class Arguments:
         input = CreatePostInput(required=True)
 
-    post = graphene.Field(PostNode)
+    post = graphene.Field(Post)
 
     @staticmethod
     def mutate(root, info, input=None):
         performances = input.pop('performances')
 
-        post = Post(owner=info.context.user, **input)
+        post = PostModel(owner=info.context.user, **input)
         post.save()
 
         for performance_data in performances:
             event_data = performance_data.pop('event')
-            event = Event.objects.get(pk=event_data.get('id'))
-            performance = Performance.objects.create(post=post, event=event, **performance_data)
+            event = EventModel.objects.get(pk=event_data.get('id'))
+            performance = PerformanceModel.objects.create(post=post, event=event, **performance_data)
             post.performances.add(performance)
 
         return CreatePost(post=post)
@@ -117,21 +117,21 @@ class UpdatePost(graphene.Mutation):
     class Arguments:
         input = UpdatePostInput(required=True)
 
-    post = graphene.Field(PostNode)
+    post = graphene.Field(Post)
 
     @staticmethod
     def mutate(root, info, input=None):
         id = input.get('id')
         performances = input.pop('performances')
-        Performance.objects.filter(post__pk=id).delete()
+        PerformanceModel.objects.filter(post__pk=id).delete()
 
-        Post.objects.filter(pk=id, owner=info.context.user).update(**input)
-        post = Post.objects.get(pk=id, owner=info.context.user)
+        PostModel.objects.filter(pk=id, owner=info.context.user).update(**input)
+        post = PostModel.objects.get(pk=id, owner=info.context.user)
 
         for performance_data in performances:
             event_data = performance_data.pop('event')
-            event = Event.objects.get(pk=event_data.get('id'))
-            performance = Performance.objects.create(post=post, event=event, **performance_data)
+            event = EventModel.objects.get(pk=event_data.get('id'))
+            performance = PerformanceModel.objects.create(post=post, event=event, **performance_data)
             post.performances.add(performance)
 
         return UpdatePost(post=post)
@@ -145,7 +145,7 @@ class DeletePost(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, id=None):
-        post = Post.objects.get(pk=id, owner=info.context.user)
+        post = PostModel.objects.get(pk=id, owner=info.context.user)
         post.delete()
         return DeletePost(success=True)
 
