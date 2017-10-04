@@ -1,5 +1,6 @@
 import graphene
 import graphene.types.datetime
+from graphene import relay
 from .schema import Event, Post
 from .models import Event as EventModel, Post as PostModel, Performance as PerformanceModel
 
@@ -13,49 +14,41 @@ class EventFields:
     remark = graphene.String()
 
 
-class CreateEventInput(graphene.InputObjectType, EventFields):
-    pass
-
-
-class CreateEvent(graphene.Mutation):
-    class Arguments:
-        input = CreateEventInput(required=True)
+class CreateEvent(relay.ClientIDMutation):
+    class Input(EventFields):
+        pass
 
     event = graphene.Field(Event)
 
-    @staticmethod
-    def mutate(root, info, input=None):
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
         event = EventModel(owner=info.context.user, **input)
         event.save()
         return CreateEvent(event=event)
 
 
-class UpdateEventInput(graphene.InputObjectType, EventFields):
-    id = graphene.ID(required=True)
-
-
-class UpdateEvent(graphene.Mutation):
-    class Arguments:
-        input = UpdateEventInput(required=True)
+class UpdateEvent(relay.ClientIDMutation):
+    class Input(EventFields):
+        id = graphene.ID(required=True)
 
     event = graphene.Field(Event)
 
-    @staticmethod
-    def mutate(root, info, input=None):
-        id = input.get('id')
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        id = input.pop('id')
         EventModel.objects.filter(pk=id, owner=info.context.user).update(**input)
         event = EventModel.objects.get(pk=id)
         return UpdateEvent(event=event)
 
 
-class DeleteEvent(graphene.Mutation):
-    class Arguments:
+class DeleteEvent(relay.ClientIDMutation):
+    class Input:
         id = graphene.ID(required=True)
 
     success = graphene.Boolean()
 
-    @staticmethod
-    def mutate(root, info, id=None):
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
         event = EventModel.objects.get(pk=id, owner=info.context.user)
         event.delete()
         return DeleteEvent(success=True)
@@ -83,18 +76,14 @@ class PostFields:
     performances = graphene.List(PerformanceInput)
 
 
-class CreatePostInput(graphene.InputObjectType, PostFields):
-    pass
-
-
-class CreatePost(graphene.Mutation):
-    class Arguments:
-        input = CreatePostInput(required=True)
+class CreatePost(relay.ClientIDMutation):
+    class Input(PostFields):
+        pass
 
     post = graphene.Field(Post)
 
-    @staticmethod
-    def mutate(root, info, input=None):
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
         performances = input.pop('performances')
 
         post = PostModel(owner=info.context.user, **input)
@@ -109,19 +98,15 @@ class CreatePost(graphene.Mutation):
         return CreatePost(post=post)
 
 
-class UpdatePostInput(graphene.InputObjectType, PostFields):
-    id = graphene.ID(required=True)
-
-
-class UpdatePost(graphene.Mutation):
-    class Arguments:
-        input = UpdatePostInput(required=True)
+class UpdatePost(relay.ClientIDMutation):
+    class Input(PostFields):
+        id = graphene.ID(required=True)
 
     post = graphene.Field(Post)
 
-    @staticmethod
-    def mutate(root, info, input=None):
-        id = input.get('id')
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        id = input.pop('id')
         performances = input.pop('performances')
         PerformanceModel.objects.filter(post__pk=id).delete()
 
@@ -137,14 +122,15 @@ class UpdatePost(graphene.Mutation):
         return UpdatePost(post=post)
 
 
-class DeletePost(graphene.Mutation):
-    class Arguments:
+class DeletePost(relay.ClientIDMutation):
+    class Input:
         id = graphene.ID(required=True)
 
     success = graphene.Boolean()
 
-    @staticmethod
-    def mutate(root, info, id=None):
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        id = input.pop('id')
         post = PostModel.objects.get(pk=id, owner=info.context.user)
         post.delete()
         return DeletePost(success=True)
