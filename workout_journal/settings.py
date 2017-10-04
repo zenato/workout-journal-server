@@ -142,8 +142,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.CursorPagination',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
