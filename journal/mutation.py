@@ -22,7 +22,7 @@ class CreateEvent(relay.ClientIDMutation):
     event = graphene.Field(Event)
 
     @classmethod
-    def mutate_and_get_payload(cls, root, info, **input):
+    def mutate_and_get_payload(cls, root, info, client_mutation_id, **input):
         event = EventModel(owner=info.context.user, **input)
         event.save()
         return CreateEvent(event=event)
@@ -30,30 +30,30 @@ class CreateEvent(relay.ClientIDMutation):
 
 class UpdateEvent(relay.ClientIDMutation):
     class Input(EventFields):
-        pass
+        id = graphene.ID(required=True)
 
     event = graphene.Field(Event)
 
     @classmethod
-    def mutate_and_get_payload(cls, root, info, **input):
-        _type, id = from_global_id(input.pop('client_mutation_id'))
-        EventModel.objects.filter(pk=id, owner=info.context.user).update(**input)
-        event = EventModel.objects.get(pk=id)
+    def mutate_and_get_payload(cls, root, info, client_mutation_id, id, **input):
+        _, event_id = from_global_id(id)
+        EventModel.objects.filter(pk=event_id, owner=info.context.user).update(**input)
+        event = EventModel(id=event_id, **input)
         return UpdateEvent(event=event)
 
 
 class DeleteEvent(relay.ClientIDMutation):
     class Input:
-        pass
+        id = graphene.ID(required=True)
 
-    success = graphene.Boolean()
+    id = graphene.ID()
 
     @classmethod
-    def mutate_and_get_payload(cls, root, info, **input):
-        _type, id = from_global_id(input.pop('client_mutation_id'))
-        event = EventModel.objects.get(pk=id, owner=info.context.user)
+    def mutate_and_get_payload(cls, root, info, client_mutation_id, id):
+        _, event_id = from_global_id(id)
+        event = EventModel.objects.get(pk=event_id, owner=info.context.user)
         event.delete()
-        return DeleteEvent(success=True)
+        return DeleteEvent(id=id)
 
 
 # Post mutations
@@ -85,16 +85,14 @@ class CreatePost(relay.ClientIDMutation):
     post = graphene.Field(Post)
 
     @classmethod
-    def mutate_and_get_payload(cls, root, info, **input):
-        performances = input.pop('performances')
-
+    def mutate_and_get_payload(cls, root, info, client_mutation_id, performances, **input):
         post = PostModel(owner=info.context.user, **input)
         post.save()
 
         for performance_data in performances:
             event_data = performance_data.pop('event')
-            _type, event_id = from_global_id(event_data.get('id'))
-            event = EventModel.objects.get(pk=event_id)
+            _, event_id = from_global_id(event_data.id)
+            event = EventModel.objects.get(pk=event_id, owner=info.context.user)
             performance = PerformanceModel.objects.create(post=post, event=event, **performance_data)
             post.performances.add(performance)
 
@@ -103,24 +101,22 @@ class CreatePost(relay.ClientIDMutation):
 
 class UpdatePost(relay.ClientIDMutation):
     class Input(PostFields):
-        pass
+        id = graphene.ID(required=True)
 
     post = graphene.Field(Post)
 
     @classmethod
-    def mutate_and_get_payload(cls, root, info, **input):
-        _type, id = from_global_id(input.pop('client_mutation_id'))
+    def mutate_and_get_payload(cls, root, info, client_mutation_id, id, performances=[], **input):
+        _, post_id = from_global_id(id)
 
-        performances = input.pop('performances')
-        PerformanceModel.objects.filter(post__pk=id).delete()
+        PostModel.objects.filter(pk=post_id, owner=info.context.user).update(**input)
+        post = PostModel.objects.get(pk=post_id, owner=info.context.user)
 
-        PostModel.objects.filter(pk=id, owner=info.context.user).update(**input)
-        post = PostModel.objects.get(pk=id, owner=info.context.user)
-
+        PerformanceModel.objects.filter(post__pk=post.id).delete()
         for performance_data in performances:
             event_data = performance_data.pop('event')
-            event_id = from_global_id(event_data.get('id'))
-            event = EventModel.objects.get(pk=event_id)
+            _, event_id = from_global_id(event_data.id)
+            event = EventModel.objects.get(pk=event_id, owner=info.context.user)
             performance = PerformanceModel.objects.create(post=post, event=event, **performance_data)
             post.performances.add(performance)
 
@@ -129,16 +125,16 @@ class UpdatePost(relay.ClientIDMutation):
 
 class DeletePost(relay.ClientIDMutation):
     class Input:
-        pass
+        id = graphene.ID(required=True)
 
-    success = graphene.Boolean()
+    id = graphene.ID()
 
     @classmethod
-    def mutate_and_get_payload(cls, root, info, **input):
-        _type, id = from_global_id(input.pop('client_mutation_id'))
-        post = PostModel.objects.get(pk=id, owner=info.context.user)
+    def mutate_and_get_payload(cls, root, info, client_mutation_id, id):
+        _, post_id = from_global_id(id)
+        post = PostModel.objects.get(pk=post_id, owner=info.context.user)
         post.delete()
-        return DeletePost(success=True)
+        return DeletePost(id=post_id)
 
 
 class Mutation(graphene.ObjectType):
