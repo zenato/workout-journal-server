@@ -1,6 +1,7 @@
 import graphene
 import graphene.types.datetime
 from graphene import relay
+from graphql_relay import from_global_id
 from .schema import Event, Post
 from .models import Event as EventModel, Post as PostModel, Performance as PerformanceModel
 
@@ -29,13 +30,13 @@ class CreateEvent(relay.ClientIDMutation):
 
 class UpdateEvent(relay.ClientIDMutation):
     class Input(EventFields):
-        id = graphene.ID(required=True)
+        pass
 
     event = graphene.Field(Event)
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        id = input.pop('id')
+        _type, id = from_global_id(input.pop('client_mutation_id'))
         EventModel.objects.filter(pk=id, owner=info.context.user).update(**input)
         event = EventModel.objects.get(pk=id)
         return UpdateEvent(event=event)
@@ -43,12 +44,13 @@ class UpdateEvent(relay.ClientIDMutation):
 
 class DeleteEvent(relay.ClientIDMutation):
     class Input:
-        id = graphene.ID(required=True)
+        pass
 
     success = graphene.Boolean()
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
+        _type, id = from_global_id(input.pop('client_mutation_id'))
         event = EventModel.objects.get(pk=id, owner=info.context.user)
         event.delete()
         return DeleteEvent(success=True)
@@ -100,13 +102,14 @@ class CreatePost(relay.ClientIDMutation):
 
 class UpdatePost(relay.ClientIDMutation):
     class Input(PostFields):
-        id = graphene.ID(required=True)
+        pass
 
     post = graphene.Field(Post)
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        id = input.pop('id')
+        _type, id = from_global_id(input.pop('client_mutation_id'))
+
         performances = input.pop('performances')
         PerformanceModel.objects.filter(post__pk=id).delete()
 
@@ -124,13 +127,13 @@ class UpdatePost(relay.ClientIDMutation):
 
 class DeletePost(relay.ClientIDMutation):
     class Input:
-        id = graphene.ID(required=True)
+        pass
 
     success = graphene.Boolean()
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        id = input.pop('id')
+        _type, id = from_global_id(input.pop('client_mutation_id'))
         post = PostModel.objects.get(pk=id, owner=info.context.user)
         post.delete()
         return DeletePost(success=True)
