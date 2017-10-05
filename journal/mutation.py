@@ -93,7 +93,8 @@ class CreatePost(relay.ClientIDMutation):
 
         for performance_data in performances:
             event_data = performance_data.pop('event')
-            event = EventModel.objects.get(pk=event_data.get('id'))
+            _type, event_id = from_global_id(event_data.get('id'))
+            event = EventModel.objects.get(pk=event_id)
             performance = PerformanceModel.objects.create(post=post, event=event, **performance_data)
             post.performances.add(performance)
 
@@ -118,7 +119,8 @@ class UpdatePost(relay.ClientIDMutation):
 
         for performance_data in performances:
             event_data = performance_data.pop('event')
-            event = EventModel.objects.get(pk=event_data.get('id'))
+            event_id = from_global_id(event_data.get('id'))
+            event = EventModel.objects.get(pk=event_id)
             performance = PerformanceModel.objects.create(post=post, event=event, **performance_data)
             post.performances.add(performance)
 
