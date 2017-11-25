@@ -35,7 +35,9 @@ class Event(DjangoObjectType):
     class Meta:
         model = EventModel
         interfaces = (relay.Node,)
-        filter_fields = ['name']
+        filter_fields = {
+            'name': ['exact', 'icontains'],
+        }
 
     @classmethod
     def get_node(cls, info, id):
