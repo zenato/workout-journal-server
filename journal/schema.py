@@ -16,7 +16,7 @@ class Post(DjangoObjectType):
         model = PostModel
         interfaces = (relay.Node,)
         filter_fields = {
-            'performances__event__name': ['icontains'],
+            'performances__event__name': ['exact', 'icontains'],
         }
 
     @classmethod
