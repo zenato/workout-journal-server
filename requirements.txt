@@ -17,7 +17,7 @@ promise==2.1.dev20170724043809
 psycopg2==2.7.1
 python-dotenv==0.6.5
 pytz==2017.2
-requests==2.18.4
+requests==2.20.0
 singledispatch==3.4.0.3
 six==1.11.0
 typing==3.6.2
